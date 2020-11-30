@@ -1,10 +1,9 @@
 package com.example.practicejetpackcompose.data
 
 import com.example.practicejetpackcompose.model.ArticleDto
-import kotlinx.coroutines.flow.Flow
 
 interface ArticleRepository {
-    suspend fun getArticles(): Flow<List<ArticleDto>>
+    suspend fun getArticles(): List<ArticleDto>
 }
 
 class ArticleRepositoryImpl(

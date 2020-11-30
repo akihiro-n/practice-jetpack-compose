@@ -1,6 +1,8 @@
 package com.example.practicejetpackcompose.ui
 
+import android.util.Log
 import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
@@ -21,6 +23,7 @@ fun NewArticleList(articles: List<ArticleDpo>) {
             text = article.title,
             fontSize = 20.sp
         )
+        Divider()
     }
 }
 
