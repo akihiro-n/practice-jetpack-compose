@@ -6,6 +6,7 @@ interface ArticleRepository {
     suspend fun getArticles(): List<ArticleDto>
 }
 
+
 class ArticleRepositoryImpl(
     private val api: QiitaApi
 ) : ArticleRepository {
