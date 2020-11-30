@@ -1,6 +1,5 @@
 package com.example.practicejetpackcompose.ui
 
-import android.util.Log
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
