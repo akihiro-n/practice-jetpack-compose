@@ -1,7 +1,8 @@
-package com.example.practicejetpackcompose
+package com.example.practicejetpackcompose.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.practicejetpackcompose.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
