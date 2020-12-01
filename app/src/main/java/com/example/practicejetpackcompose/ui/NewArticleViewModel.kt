@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.practicejetpackcompose.data.ArticleRepository
 import com.example.practicejetpackcompose.model.ArticleDpo
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 
 class NewArticleViewModel @ViewModelInject constructor(
     private val repository: ArticleRepository
@@ -17,9 +17,8 @@ class NewArticleViewModel @ViewModelInject constructor(
     var newArticles: List<ArticleDpo> by mutableStateOf(listOf())
         private set
 
-    fun fetchNewArticles() {
-        viewModelScope.launch {
-            newArticles = newArticles + repository.getArticles().map(::ArticleDpo)
-        }
-    }
+    fun fetchNewArticles() = repository.getArticles()
+        .onEach { newArticles = newArticles + it.map(::ArticleDpo) }
+        .catch { /** TODO: エラーハンドリング */ }
+        .launchIn(viewModelScope)
 }
