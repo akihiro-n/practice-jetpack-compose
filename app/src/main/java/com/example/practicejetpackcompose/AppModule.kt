@@ -58,9 +58,4 @@ object AppModule {
     @Provides
     @Singleton
     fun provideConstants(): Constants = ConstantsImpl()
-
-    @Provides
-    @Singleton
-    fun articleRepository(qiitaApi: QiitaApi): ArticleRepository =
-        ArticleRepositoryImpl(api = qiitaApi)
 }
