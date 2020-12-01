@@ -1,5 +1,6 @@
 package com.example.practicejetpackcompose.ui
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.practicejetpackcompose.data.ArticleRepository
 import com.example.practicejetpackcompose.model.ArticleDpo
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class NewArticleViewModel @ViewModelInject constructor(
@@ -17,9 +19,8 @@ class NewArticleViewModel @ViewModelInject constructor(
     var newArticles: List<ArticleDpo> by mutableStateOf(listOf())
         private set
 
-    fun fetchNewArticles() {
-        viewModelScope.launch {
-            newArticles = newArticles + repository.getArticles().map(::ArticleDpo)
-        }
-    }
+    fun fetchNewArticles() = repository.getArticles()
+        .onEach { newArticles = newArticles + it.map(::ArticleDpo) }
+        .catch { /** TODO: エラーハンドリング */ }
+        .launchIn(viewModelScope)
 }
