@@ -1,10 +1,5 @@
-package com.example.practicejetpackcompose.di
+package com.example.practicejetpackcompose
 
-import com.example.practicejetpackcompose.BuildConfig
-import com.example.practicejetpackcompose.Constants
-import com.example.practicejetpackcompose.ConstantsImpl
-import com.example.practicejetpackcompose.data.ArticleRepository
-import com.example.practicejetpackcompose.data.ArticleRepositoryImpl
 import com.example.practicejetpackcompose.data.QiitaApi
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
