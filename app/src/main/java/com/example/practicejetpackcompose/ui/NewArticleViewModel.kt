@@ -1,6 +1,5 @@
 package com.example.practicejetpackcompose.ui
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.practicejetpackcompose.data.ArticleRepository
 import com.example.practicejetpackcompose.model.ArticleDpo
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 class NewArticleViewModel @ViewModelInject constructor(
     private val repository: ArticleRepository
