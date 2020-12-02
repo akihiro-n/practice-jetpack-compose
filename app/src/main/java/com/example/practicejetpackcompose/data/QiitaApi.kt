@@ -1,6 +1,6 @@
 package com.example.practicejetpackcompose.data
 
-import com.example.practicejetpackcompose.model.ArticleDto
+import com.example.practicejetpackcompose.model.api.ArticleDto
 import retrofit2.http.GET
 
 interface QiitaApi {

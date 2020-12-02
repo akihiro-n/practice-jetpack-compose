@@ -19,6 +19,5 @@ class NewArticleViewModel @ViewModelInject constructor(
 
     fun fetchNewArticles() = repository.getArticles()
         .onEach { newArticles = newArticles + it.map(::ArticleDpo) }
-        .catch { /** TODO: エラーハンドリング */ }
         .launchIn(viewModelScope)
 }
