@@ -1,20 +1,27 @@
 package com.example.practicejetpackcompose.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageAsset
 import androidx.compose.ui.graphics.asImageAsset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
 import com.example.practicejetpackcompose.model.ArticleDpo
-import com.example.practicejetpackcompose.util.bitmapRequestCallback
+import com.example.practicejetpackcompose.util.bitmapCallback
 import com.squareup.picasso.Picasso
 
 @Composable
@@ -25,25 +32,35 @@ fun NewArticlesScreen() {
 
 @Composable
 fun NewArticleList(articles: List<ArticleDpo>) {
-    val picasso = Picasso.get()
+
     LazyColumnFor(items = articles) { article ->
-        var imageProfileImageAsset by remember { mutableStateOf<ImageAsset?>(null) }
-        Row {
-            Card(shape = CircleShape) {
-                Image(asset = imageProfileImageAsset ?: return@Card)
+
+        var profileImage by remember(article.profileImageUrl) {
+            mutableStateOf<ImageAsset?>(null)
+        }
+        onCommit(article.profileImageUrl) {
+            bitmapCallback { profileImage = it.asImageAsset() }
+                .run {
+                    Picasso.get().load(article.profileImageUrl).into(this)
+                    onDispose { Picasso.get().cancelRequest(this) }
+                }
+        }
+
+        Card(shape = RoundedCornerShape(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Card(
+                    shape = CircleShape,
+                    modifier = Modifier.width(48.dp).height(48.dp)
+                ) profileImage@{
+                    Image(asset = profileImage ?: return@profileImage)
+                }
+                Text(
+                    text = article.title,
+                    fontSize = 20.sp
+                )
             }
-            Text(
-                text = article.title,
-                fontSize = 20.sp
-            )
         }
         Divider()
-        val profileImageUrl = article.profileImageUrl
-        val callback = bitmapRequestCallback(
-            onSuccess = { imageProfileImageAsset = it.asImageAsset() }
-        )
-        onCommit(profileImageUrl) { picasso.load(profileImageUrl).into(callback) }
-        onDispose { picasso.cancelRequest(callback) }
     }
 }
 

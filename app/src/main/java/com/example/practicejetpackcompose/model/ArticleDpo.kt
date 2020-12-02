@@ -1,5 +1,7 @@
 package com.example.practicejetpackcompose.model
 
+import com.example.practicejetpackcompose.model.api.ArticleDto
+
 data class ArticleDpo(
     val title: String,
     val profileImageUrl: String? = null
@@ -8,6 +10,6 @@ data class ArticleDpo(
     /** 記事のレスポンスモデルから[ArticleDpo]に変換 */
     constructor(dto: ArticleDto) : this(
         title = dto.title,
-        profileImageUrl = dto.profileImageUrl
+        profileImageUrl = dto.user.profileImageUrl
     )
 }

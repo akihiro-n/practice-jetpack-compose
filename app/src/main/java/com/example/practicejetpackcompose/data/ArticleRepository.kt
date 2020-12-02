@@ -1,6 +1,6 @@
 package com.example.practicejetpackcompose.data
 
-import com.example.practicejetpackcompose.model.ArticleDto
+import com.example.practicejetpackcompose.model.api.ArticleDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
