@@ -5,7 +5,7 @@ import android.graphics.drawable.Drawable
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 
-fun bitmapRequestCallback(onSuccess: (Bitmap) -> Unit) =
+fun bitmapCallback(onSuccess: (Bitmap) -> Unit) =
     object : Target {
         override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
             runCatching { requireNotNull(bitmap) }.onSuccess(onSuccess)
@@ -15,7 +15,7 @@ fun bitmapRequestCallback(onSuccess: (Bitmap) -> Unit) =
         override fun onPrepareLoad(placeHolderDrawable: Drawable?) = Unit
     }
 
-fun bitmapRequestCallback(
+fun bitmapCallback(
     onSuccess: (Bitmap) -> Unit,
     onError: (Throwable) -> Unit
 ) = object : Target {

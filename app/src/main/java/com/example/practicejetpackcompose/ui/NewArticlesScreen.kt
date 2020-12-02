@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
 import com.example.practicejetpackcompose.model.ArticleDpo
-import com.example.practicejetpackcompose.util.bitmapRequestCallback
+import com.example.practicejetpackcompose.util.bitmapCallback
 import com.squareup.picasso.Picasso
 
 @Composable
@@ -34,11 +34,12 @@ fun NewArticlesScreen() {
 fun NewArticleList(articles: List<ArticleDpo>) {
 
     LazyColumnFor(items = articles) { article ->
+
         var profileImage by remember(article.profileImageUrl) {
             mutableStateOf<ImageAsset?>(null)
         }
         onCommit(article.profileImageUrl) {
-            bitmapRequestCallback { profileImage = it.asImageAsset() }
+            bitmapCallback { profileImage = it.asImageAsset() }
                 .run {
                     Picasso.get().load(article.profileImageUrl).into(this)
                     onDispose { Picasso.get().cancelRequest(this) }
