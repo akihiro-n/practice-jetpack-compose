@@ -22,7 +22,9 @@ import androidx.ui.tooling.preview.Preview
 import com.example.practicejetpackcompose.model.ArticleDpo
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun NewArticlesScreen() {
@@ -53,9 +55,10 @@ fun ErrorMessageColumn(item: NewArticleListItem.Error) {
 
 @Composable
 fun NewArticleColumn(item: NewArticleListItem.Article) {
-    var profileImage by remember(item.article.profileImageUrl) {
-        mutableStateOf<ImageAsset?>(null)
-    }
+
+    val imageUrl = item.article.profileImageUrl
+    var profileImage by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
+
     rememberCoroutineScope().launch {
         profileImage = Picasso.get().getBitmapImage(item.article.profileImageUrl).asImageAsset()
     }

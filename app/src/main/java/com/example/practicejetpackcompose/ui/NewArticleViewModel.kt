@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.practicejetpackcompose.data.ArticleRepository
 import com.example.practicejetpackcompose.model.ArticleDpo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -26,37 +27,40 @@ class NewArticleViewModel @ViewModelInject constructor(
         private set
 
     init {
-        viewModelScope.launch {
 
+        viewModelScope.launch {
             isLoading.send(false)
             newArticles.send(emptyList())
             requestError.send(null)
-
-            combine(
-                isLoading.receiveAsFlow()
-                    .map { loading -> NewArticleListItem.Progress.takeIf { loading } },
-                newArticles.receiveAsFlow()
-                    .map { articles -> articles.map { NewArticleListItem.Article(it) } },
-                requestError.receiveAsFlow()
-                    .map { error -> error?.let { NewArticleListItem.Error(it) } },
-                transform = { progress, articles, error ->
-                    val newItems = emptyList<NewArticleListItem>() + progress + articles + error
-                    return@combine newItems.filterNotNull()
-                }
-            ).onEach { items = it }
         }
+
+        combine(
+            isLoading.receiveAsFlow(),
+            newArticles.receiveAsFlow(),
+            requestError.receiveAsFlow()
+        ) { loading, articles, error ->
+
+            val progressItem = NewArticleListItem.Progress.takeIf { loading }
+            val articleItems = articles.map { NewArticleListItem.Article(it) }
+            val errorItem = error?.let { NewArticleListItem.Error(it) }
+
+            return@combine emptyList<NewArticleListItem>()
+                .plus(progressItem)
+                .plus(articleItems)
+                .plus(errorItem)
+                .filterNotNull()
+        }
+            .onEach { items = it }
+            .launchIn(viewModelScope)
     }
 
-    fun fetchNewArticles() {
-        viewModelScope.launch {
-            repository.getArticles().map { it.map(::ArticleDpo) }
-                .onStart {
-                    isLoading.send(true)
-                    requestError.send(null)
-                }
-                .onEach { newArticles.send(newArticles.receive() + it) }
-                .catch { requestError.send(it) }
-                .onCompletion { isLoading.send(false) }
+    fun fetchNewArticles() = repository.getArticles().map { it.map(::ArticleDpo) }
+        .onStart {
+            isLoading.send(true)
+            requestError.send(null)
         }
-    }
+        .onEach { newArticles.send(it) }
+        .catch { requestError.send(it) }
+        .onCompletion { isLoading.send(false) }
+        .launchIn(viewModelScope)
 }
