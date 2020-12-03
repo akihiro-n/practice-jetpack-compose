@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -27,42 +27,61 @@ import kotlinx.coroutines.launch
 @Composable
 fun NewArticlesScreen() {
     val viewModel = viewModel<NewArticleViewModel>()
-    NewArticleList(articles = viewModel.newArticles)
+    NewArticleList(items = viewModel.items)
 }
 
 @Composable
-fun NewArticleList(articles: List<ArticleDpo>) {
-
-    LazyColumnFor(items = articles) { article ->
-
-        var profileImage by remember(article.profileImageUrl) {
-            mutableStateOf<ImageAsset?>(null)
+fun NewArticleList(items: List<NewArticleListItem>) {
+    LazyColumnFor(items) { item ->
+        when (item) {
+            is NewArticleListItem.Progress -> ProgressColumn()
+            is NewArticleListItem.Error -> ErrorMessageColumn(item)
+            is NewArticleListItem.Article -> NewArticleColumn(item)
         }
-        rememberCoroutineScope().launch {
-            profileImage = Picasso.get().getBitmapImage(article.profileImageUrl).asImageAsset()
-        }
-
-        Card {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Card(
-                    shape = CircleShape,
-                    modifier = Modifier.width(48.dp).height(48.dp)
-                ) profileImage@{
-                    Image(asset = profileImage ?: return@profileImage)
-                }
-                Text(
-                    text = article.title,
-                    fontSize = 20.sp
-                )
-            }
-        }
-        Divider()
     }
+}
+
+@Composable
+fun ProgressColumn() {
+    CircularProgressIndicator()
+}
+
+@Composable
+fun ErrorMessageColumn(item: NewArticleListItem.Error) {
+    Text(item.message)
+}
+
+@Composable
+fun NewArticleColumn(item: NewArticleListItem.Article) {
+    var profileImage by remember(item.article.profileImageUrl) {
+        mutableStateOf<ImageAsset?>(null)
+    }
+    rememberCoroutineScope().launch {
+        profileImage = Picasso.get().getBitmapImage(item.article.profileImageUrl).asImageAsset()
+    }
+
+    Card {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Card(
+                shape = CircleShape,
+                modifier = Modifier.width(48.dp).height(48.dp)
+            ) profileImage@{
+                Image(asset = profileImage ?: return@profileImage)
+            }
+            Text(
+                text = item.article.title,
+                fontSize = 20.sp
+            )
+        }
+    }
+    Divider()
 }
 
 @Preview
 @Composable
 fun NewArticlesScreenPreview() {
-    val articles = (0..30).map { ArticleDpo(title = "Preview Test $it") }
-    NewArticleList(articles = articles)
+    val articles = (0..30).map {
+        NewArticleListItem.Article(ArticleDpo(title = "Preview Test $it"))
+    }
+    NewArticleList(items = articles)
 }
