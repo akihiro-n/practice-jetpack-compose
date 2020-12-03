@@ -4,6 +4,19 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+
+suspend fun Picasso.getBitmapImage(url: String?) =
+    suspendCancellableCoroutine<Bitmap> { continuation ->
+        val callback = bitmapCallback(
+            onSuccess = continuation::resume,
+            onError = continuation::resumeWithException
+        )
+        continuation.invokeOnCancellation { cancelRequest(callback) }
+        load(url).into(callback)
+    }
 
 fun bitmapCallback(onSuccess: (Bitmap) -> Unit) =
     object : Target {
