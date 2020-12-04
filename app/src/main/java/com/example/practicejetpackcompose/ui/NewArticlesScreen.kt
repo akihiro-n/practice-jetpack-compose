@@ -1,30 +1,30 @@
 package com.example.practicejetpackcompose.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageAsset
-import androidx.compose.ui.graphics.asImageAsset
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
+import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.model.ArticleDpo
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun NewArticlesScreen() {
@@ -34,55 +34,95 @@ fun NewArticlesScreen() {
 
 @Composable
 fun NewArticleList(items: List<NewArticleListItem>) {
-    LazyColumnFor(items) { item ->
-        when (item) {
-            is NewArticleListItem.Progress -> ProgressColumn()
-            is NewArticleListItem.Error -> ErrorMessageColumn(item)
-            is NewArticleListItem.Article -> NewArticleColumn(item)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(color = colorResource(R.color.background_dark))
+    ) {
+        LazyColumnFor(items = items) { item ->
+            when (item) {
+                is NewArticleListItem.Progress -> ProgressColumn()
+                is NewArticleListItem.Error -> ErrorMessageColumn(item)
+                is NewArticleListItem.Article -> NewArticleColumn(item)
+                is NewArticleListItem.Space -> Spacer(Modifier.height(8.dp))
+            }
         }
     }
 }
 
 @Composable
 fun ProgressColumn() {
-    CircularProgressIndicator()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        CircularProgressIndicator()
+    }
 }
 
 @Composable
 fun ErrorMessageColumn(item: NewArticleListItem.Error) {
-    Text(item.message)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(item.message)
+    }
 }
 
 @Composable
 fun NewArticleColumn(item: NewArticleListItem.Article) {
 
     val imageUrl = item.article.profileImageUrl
-    var profileImage by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
-
+    var profileImage by remember(imageUrl) {
+        mutableStateOf<ImageAsset?>(null)
+    }
     rememberCoroutineScope().launch {
-        profileImage = Picasso.get().getBitmapImage(item.article.profileImageUrl).asImageAsset()
+        profileImage = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
     }
 
-    Card {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Card(
-                shape = CircleShape,
-                modifier = Modifier.width(48.dp).height(48.dp)
-            ) profileImage@{
-                Image(asset = profileImage ?: return@profileImage)
+    Card(
+        elevation = 2.dp,
+        modifier = Modifier.padding(horizontal = 16.dp).heightIn(200.dp).fillMaxWidth(),
+        backgroundColor = colorResource(R.color.content_dark),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            profileImage?.let { asset ->
+                Image(
+                    modifier = Modifier.fillMaxWidth().height(128.dp),
+                    contentScale = ContentScale.FillWidth,
+                    asset = asset
+                )
             }
-            Text(
-                text = item.article.title,
-                fontSize = 20.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                profileImage?.let { asset ->
+                    Image(
+                        modifier = Modifier.width(48.dp).height(48.dp).clip(CircleShape),
+                        contentScale = ContentScale.FillWidth,
+                        asset = asset
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = item.article.title,
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+            }
         }
     }
-    Divider()
 }
 
 @Preview
 @Composable
 fun NewArticlesScreenPreview() {
+    // Preview表示用データ
     val articles = (0..30).map {
         NewArticleListItem.Article(ArticleDpo(title = "Preview Test $it"))
     }
