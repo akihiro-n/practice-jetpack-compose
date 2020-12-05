@@ -10,10 +10,7 @@ import kotlin.coroutines.resumeWithException
 
 suspend fun Picasso.getBitmapImage(url: String?): Bitmap =
     suspendCancellableCoroutine { continuation ->
-        val callback = bitmapCallback(
-            onSuccess = continuation::resume,
-            onError = continuation::resumeWithException
-        )
+        val callback = bitmapCallback(onSuccess = continuation::resume)
         continuation.invokeOnCancellation { cancelRequest(callback) }
         load(url).into(callback)
     }

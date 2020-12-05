@@ -6,7 +6,7 @@ sealed class NewArticleListItem {
 
     object Progress : NewArticleListItem()
 
-    object Space : NewArticleListItem()
+    object Divider : NewArticleListItem()
 
     data class Article(val article: ArticleDpo) : NewArticleListItem()
 

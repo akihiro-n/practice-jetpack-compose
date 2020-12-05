@@ -40,7 +40,7 @@ class NewArticleViewModel @ViewModelInject constructor(
                 .mapIndexed { index, articleDpo ->
                     listOfNotNull(
                         NewArticleListItem.Article(articleDpo),
-                        NewArticleListItem.Space.takeIf { index != articles.lastIndex }
+                        NewArticleListItem.Divider.takeIf { index != articles.lastIndex }
                     )
                 }
                 .flatten()
@@ -56,7 +56,8 @@ class NewArticleViewModel @ViewModelInject constructor(
     }
 
     fun fetchNewArticles() {
-        repository.getArticles().map { it.map(::ArticleDpo) }
+        repository.getArticles()
+            .map { it.map { dto -> ArticleDpo(dto = dto) } }
             .onStart {
                 isLoading.send(true)
                 requestError.send(null)
