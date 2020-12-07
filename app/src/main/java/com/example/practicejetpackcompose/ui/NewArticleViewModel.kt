@@ -17,6 +17,10 @@ class NewArticleViewModel @ViewModelInject constructor(
     private val repository: ArticleRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val FIRST_PAGE = 1L
+    }
+
     private val isLoading: Channel<Boolean> = Channel(Channel.CONFLATED)
     private val newArticles: Channel<List<ArticleDpo>> = Channel(Channel.CONFLATED)
     private val requestError: Channel<Throwable?> = Channel(Channel.CONFLATED)
@@ -56,7 +60,7 @@ class NewArticleViewModel @ViewModelInject constructor(
     }
 
     fun fetchNewArticles() {
-        repository.getArticles()
+        repository.getArticles(page = FIRST_PAGE)
             .map { it.map { dto -> ArticleDpo(dto = dto) } }
             .onStart {
                 isLoading.send(true)
