@@ -7,36 +7,41 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.practicejetpackcompose.data.ArticleRepository
+import com.example.practicejetpackcompose.data.TagRepository
+import com.example.practicejetpackcompose.domain.toDpo
 import com.example.practicejetpackcompose.model.ArticleDpo
+import com.example.practicejetpackcompose.model.api.TagDto
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
 
+@FlowPreview
 @OptIn(ExperimentalCoroutinesApi::class)
 class NewArticleViewModel @ViewModelInject constructor(
-    private val repository: ArticleRepository
+    private val articleRepository: ArticleRepository,
+    private val tagRepository: TagRepository
 ) : ViewModel() {
 
     companion object {
         private const val FIRST_PAGE = 1L
     }
 
-    private val isLoading: Channel<Boolean> = Channel(Channel.CONFLATED)
-    private val newArticles: Channel<List<ArticleDpo>> = Channel(Channel.CONFLATED)
-    private val requestError: Channel<Throwable?> = Channel(Channel.CONFLATED)
+    private val isLoading = ConflatedBroadcastChannel(false)
+    private val newArticles = ConflatedBroadcastChannel<List<ArticleDpo>>(emptyList())
+    private val requestError = ConflatedBroadcastChannel<Throwable?>(null)
+
+    private var nextPage = FIRST_PAGE
 
     var items: List<NewArticleListItem> by mutableStateOf(listOf())
         private set
 
     init {
-        isLoading.offer(false)
-        newArticles.offer(emptyList())
-        requestError.offer(null)
 
         combine(
-            isLoading.receiveAsFlow(),
-            newArticles.receiveAsFlow(),
-            requestError.receiveAsFlow()
+            isLoading.asFlow(),
+            newArticles.asFlow(),
+            requestError.asFlow()
         ) { loading, articles, error ->
 
             val progressItem = NewArticleListItem.Progress.takeIf { loading }
@@ -59,14 +64,29 @@ class NewArticleViewModel @ViewModelInject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun fetchNewArticles() {
-        repository.getArticles(page = FIRST_PAGE)
-            .map { it.map { dto -> ArticleDpo(dto = dto) } }
-            .onStart {
-                isLoading.send(true)
-                requestError.send(null)
+    // TODO: タグ一覧と記事一覧を取得する
+    fun fetchFeed() {
+        merge(fetchArticles(), fetchTags()).fetch()
+    }
+
+    fun fetchNextArticles() {
+        if (isLoading.value) return
+        fetchArticles().fetch()
+    }
+
+    private fun fetchTags(): Flow<List<TagDto>> =
+        tagRepository.getTags(FIRST_PAGE)
+
+    private fun fetchArticles(): Flow<List<ArticleDpo>> =
+        articleRepository.getArticles(nextPage)
+            .toDpo()
+            .onEach { new ->
+                nextPage++
+                newArticles.send(newArticles.value + new)
             }
-            .onEach { newArticles.send(it) }
+
+    private fun <T> Flow<T>.fetch() {
+        onStart { isLoading.send(true); requestError.send(null) }
             .catch { requestError.send(it) }
             .onCompletion { isLoading.send(false) }
             .launchIn(viewModelScope)

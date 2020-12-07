@@ -2,11 +2,10 @@ package com.example.practicejetpackcompose.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +15,6 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
@@ -26,17 +24,32 @@ import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
 import com.example.practicejetpackcompose.ui.common.ProgressScreen
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 
+private const val POSITION_NEXT_PAGE_LOADING = 3
+
+@FlowPreview
 @Composable
 fun NewArticlesScreen() {
     val viewModel = viewModel<NewArticleViewModel>()
-    NewArticleList(items = viewModel.items)
+    NewArticleList(
+        items = viewModel.items,
+        onStartLoadNextPage = { viewModel.fetchNextArticles() }
+    )
 }
 
 @Composable
-fun NewArticleList(items: List<NewArticleListItem>) {
-    LazyColumnFor(items = items) { item ->
+fun NewArticleList(
+    items: List<NewArticleListItem>,
+    onStartLoadNextPage: () -> Unit
+) {
+    LazyColumnForIndexed(items = items) { position, item ->
+
+        if (position == (items.size - POSITION_NEXT_PAGE_LOADING)) {
+            onActive { onStartLoadNextPage.invoke() }
+        }
+
         when (item) {
             is NewArticleListItem.Progress -> ProgressScreen()
             is NewArticleListItem.Error -> ErrorMessageScreen(item.message)
