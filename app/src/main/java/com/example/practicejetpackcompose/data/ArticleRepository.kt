@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flowOn
 interface ArticleRepository {
 
     companion object {
-        private const val PER_PAGE = 100L
+        private const val PER_PAGE = 30L
     }
 
     fun getArticles(

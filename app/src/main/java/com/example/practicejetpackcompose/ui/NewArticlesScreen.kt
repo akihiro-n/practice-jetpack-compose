@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.ui.common.ErrorMessageScreen
+import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
 import com.example.practicejetpackcompose.ui.common.ProgressScreen
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
@@ -83,22 +84,26 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
                         fontSize = 16.sp
                     )
                     Spacer(Modifier.width(16.dp))
+
+                    val imageModifier = Modifier.size(36.dp).clip(CircleShape)
                     profileImage?.let { asset ->
                         Image(
-                            modifier = Modifier.size(36.dp).clip(CircleShape),
+                            modifier = imageModifier,
                             contentScale = ContentScale.FillWidth,
-                            asset = asset
+                            asset = asset,
                         )
-                    }
+                    } ?: LoadingImageScreen(modifier = imageModifier)
                 }
             }
+
+            val imageModifier = Modifier.fillMaxWidth().height(128.dp)
             profileImage?.let { asset ->
                 Image(
-                    modifier = Modifier.fillMaxWidth().height(128.dp),
+                    modifier = imageModifier,
                     contentScale = ContentScale.FillWidth,
                     asset = asset,
                 )
-            }
+            } ?: LoadingImageScreen(modifier = imageModifier)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
