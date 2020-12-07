@@ -1,8 +1,6 @@
 package com.example.practicejetpackcompose.data.module
 
-import com.example.practicejetpackcompose.data.ArticleRepository
-import com.example.practicejetpackcompose.data.ArticleRepositoryImpl
-import com.example.practicejetpackcompose.data.QiitaApi
+import com.example.practicejetpackcompose.data.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,4 +15,9 @@ object Module {
     @Singleton
     fun articleRepository(qiitaApi: QiitaApi): ArticleRepository =
         ArticleRepositoryImpl(api = qiitaApi)
+
+    @Provides
+    @Singleton
+    fun tagRepository(qiitaApi: QiitaApi): TagRepository =
+        TagRepositoryImpl(api = qiitaApi)
 }

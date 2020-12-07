@@ -2,7 +2,7 @@ package com.example.practicejetpackcompose.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
@@ -14,25 +14,42 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.ui.common.ErrorMessageScreen
+import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
 import com.example.practicejetpackcompose.ui.common.ProgressScreen
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 
+private const val POSITION_NEXT_PAGE_LOADING = 3
+
+@FlowPreview
 @Composable
 fun NewArticlesScreen() {
     val viewModel = viewModel<NewArticleViewModel>()
-    NewArticleList(items = viewModel.items)
+    NewArticleList(
+        items = viewModel.items,
+        onStartLoadNextPage = { viewModel.fetchNextArticles() }
+    )
 }
 
 @Composable
-fun NewArticleList(items: List<NewArticleListItem>) {
-    LazyColumnFor(items = items) { item ->
+fun NewArticleList(
+    items: List<NewArticleListItem>,
+    onStartLoadNextPage: () -> Unit
+) {
+    LazyColumnForIndexed(items = items) { position, item ->
+
+        if (position == (items.size - POSITION_NEXT_PAGE_LOADING)) {
+            onActive { onStartLoadNextPage.invoke() }
+        }
+
         when (item) {
             is NewArticleListItem.Progress -> ProgressScreen()
             is NewArticleListItem.Error -> ErrorMessageScreen(item.message)
@@ -83,22 +100,26 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
                         fontSize = 16.sp
                     )
                     Spacer(Modifier.width(16.dp))
+
+                    val imageModifier = Modifier.size(24.dp).clip(CircleShape)
                     profileImage?.let { asset ->
                         Image(
-                            modifier = Modifier.size(36.dp).clip(CircleShape),
+                            modifier = imageModifier,
                             contentScale = ContentScale.FillWidth,
-                            asset = asset
+                            asset = asset,
                         )
-                    }
+                    } ?: LoadingImageScreen(modifier = imageModifier)
                 }
             }
+
+            val imageModifier = Modifier.fillMaxWidth().height(128.dp)
             profileImage?.let { asset ->
                 Image(
-                    modifier = Modifier.fillMaxWidth().height(128.dp),
+                    modifier = imageModifier,
                     contentScale = ContentScale.FillWidth,
                     asset = asset,
                 )
-            }
+            } ?: LoadingImageScreen(modifier = imageModifier)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -125,7 +146,22 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
                 modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = stringResource(R.string.likes_icon),
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(text = item.article.likesCount, color = Color.Gray, fontSize = 12.sp)
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Text(
+                    text = stringResource(R.string.views_icon),
+                    color = Color.Yellow,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(text = item.article.pageViewsCount, color = Color.Gray, fontSize = 12.sp)
             }
         }

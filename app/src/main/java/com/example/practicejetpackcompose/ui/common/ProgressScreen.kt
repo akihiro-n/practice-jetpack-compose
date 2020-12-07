@@ -13,8 +13,8 @@ private val columnModifier = Modifier.fillMaxWidth()
 private val indicatorModifier = Modifier.padding(8.dp)
 
 @Composable
-fun ProgressScreen() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = columnModifier) {
+fun ProgressScreen(modifier: Modifier = columnModifier) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         CircularProgressIndicator(
             color = Color.White,
             modifier = indicatorModifier

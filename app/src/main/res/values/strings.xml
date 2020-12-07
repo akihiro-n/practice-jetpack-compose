@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PracticeJetpackCompose</string>
+    <string name="likes_icon">LIKE</string>
+    <string name="views_icon">VIEW</string>
 </resources>
