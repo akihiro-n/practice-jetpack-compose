@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
@@ -85,7 +88,7 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
                     )
                     Spacer(Modifier.width(16.dp))
 
-                    val imageModifier = Modifier.size(36.dp).clip(CircleShape)
+                    val imageModifier = Modifier.size(24.dp).clip(CircleShape)
                     profileImage?.let { asset ->
                         Image(
                             modifier = imageModifier,
@@ -130,7 +133,22 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
                 modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = stringResource(R.string.likes_icon),
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(text = item.article.likesCount, color = Color.Gray, fontSize = 12.sp)
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Text(
+                    text = stringResource(R.string.views_icon),
+                    color = Color.Yellow,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(text = item.article.pageViewsCount, color = Color.Gray, fontSize = 12.sp)
             }
         }
