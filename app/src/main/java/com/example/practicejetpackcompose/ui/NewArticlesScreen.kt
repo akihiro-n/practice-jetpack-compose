@@ -1,11 +1,16 @@
 package com.example.practicejetpackcompose.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.lazy.LazyColumnForIndexed
+import androidx.compose.foundation.lazy.LazyRowFor
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,6 +28,7 @@ import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.model.ArticleDpo
 import com.example.practicejetpackcompose.model.api.ArticleDto
 import com.example.practicejetpackcompose.model.api.ArticleTagDto
+import com.example.practicejetpackcompose.model.api.TagDto
 import com.example.practicejetpackcompose.model.api.UserDto
 import com.example.practicejetpackcompose.ui.common.ErrorMessageScreen
 import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
@@ -39,7 +44,7 @@ private const val POSITION_NEXT_PAGE_LOADING = 3
 @Composable
 fun NewArticlesScreen() {
     val viewModel = viewModel<NewArticleViewModel>()
-    remember { viewModel.fetchNextArticles() }
+    remember { viewModel.fetchFeed() }
     NewArticleList(
         items = viewModel.items,
         onStartLoadNextPage = { viewModel.fetchNextArticles() }
@@ -51,18 +56,75 @@ fun NewArticleList(
     items: List<NewArticleListItem>,
     onStartLoadNextPage: () -> Unit
 ) {
-    LazyColumnForIndexed(items = items) { position, item ->
 
-        if (position == (items.size - POSITION_NEXT_PAGE_LOADING)) {
-            onActive { onStartLoadNextPage.invoke() }
-        }
+    LazyColumnForIndexed(items = items) { position, item ->
 
         when (item) {
             is NewArticleListItem.Progress -> ProgressScreen()
             is NewArticleListItem.Error -> ErrorMessageScreen(item.message)
-            is NewArticleListItem.Article -> NewArticleColumn(item)
+            is NewArticleListItem.Tags -> PopularTagsColumn(item)
+            is NewArticleListItem.Article -> {
+
+                /**
+                 * 次のページを読み込む
+                 */
+                if (position == (items.size - POSITION_NEXT_PAGE_LOADING)) {
+                    onActive { onStartLoadNextPage.invoke() }
+                }
+
+                NewArticleColumn(item)
+            }
             is NewArticleListItem.Divider -> ColumnSpaceDivider()
         }
+    }
+}
+
+@Composable
+fun PopularTagsColumn(item: NewArticleListItem.Tags) {
+
+    LazyRowFor(items = item.tags) { tag ->
+
+        val imageUrl = tag.iconUrl
+        var imageAsset by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
+
+        rememberCoroutineScope().launch {
+            imageAsset = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
+        }
+
+        val imageModifier = Modifier.size(12.dp).clip(RoundedCornerShape(4.dp))
+        val asset = imageAsset
+
+        Row(
+            modifier = Modifier.background(
+                color = colorResource(R.color.content_dark),
+                shape = RectangleShape
+            ).padding(8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            if (asset != null) {
+                Image(
+                    modifier = imageModifier,
+                    contentScale = ContentScale.FillWidth,
+                    asset = asset,
+                )
+            } else {
+                LoadingImageScreen(modifier = imageModifier)
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            Text(
+                text = tag.id,
+                color = Color.White,
+                fontSize = 12.sp
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
     }
 }
 
@@ -72,8 +134,7 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
     val imageUrl = item.article.profileImageUrl
     var profileImage by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
     rememberCoroutineScope().launch {
-        profileImage = Picasso.get()
-            .getBitmapImage(imageUrl).asImageAsset()
+        profileImage = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
     }
 
     Card(
@@ -110,24 +171,32 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
                     Spacer(Modifier.width(16.dp))
 
                     val imageModifier = Modifier.size(24.dp).clip(CircleShape)
-                    profileImage?.let { asset ->
+                    val asset = profileImage
+
+                    if (asset != null) {
                         Image(
                             modifier = imageModifier,
                             contentScale = ContentScale.FillWidth,
                             asset = asset,
                         )
-                    } ?: LoadingImageScreen(modifier = imageModifier)
+                    } else {
+                        LoadingImageScreen(modifier = imageModifier)
+                    }
                 }
             }
 
             val imageModifier = Modifier.fillMaxWidth().height(128.dp)
-            profileImage?.let { asset ->
+            val asset = profileImage
+
+            if (asset != null) {
                 Image(
                     modifier = imageModifier,
                     contentScale = ContentScale.FillWidth,
                     asset = asset,
                 )
-            } ?: LoadingImageScreen(modifier = imageModifier)
+            } else {
+                LoadingImageScreen(modifier = imageModifier)
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,9 +253,22 @@ fun ColumnSpaceDivider() {
 @Preview
 @Composable
 fun PreviewNewArticlesScreen() {
+
     // Preview表示用データ
+    val tags = listOf(
+        NewArticleListItem.Tags(tags = (0..10).map {
+            TagDto(
+                id = "$it Kotlin",
+                followersCount = "${it * 10}",
+                itemsCount = "${it * 20}",
+                iconUrl = null
+            )
+        }),
+        NewArticleListItem.Divider
+    )
+
     val articles = (0..30).map {
-        emptyList<NewArticleListItem>().plus(
+        listOf(
             NewArticleListItem.Article(
                 ArticleDpo(
                     ArticleDto(
@@ -203,11 +285,13 @@ fun PreviewNewArticlesScreen() {
                         pageViewsCount = "$it"
                     )
                 )
-            )
-        ).plus(NewArticleListItem.Divider)
+            ),
+            NewArticleListItem.Divider
+        )
     }.flatten()
+
     NewArticleList(
-        items = articles,
+        items = tags + articles,
         onStartLoadNextPage = {}
     )
 }
