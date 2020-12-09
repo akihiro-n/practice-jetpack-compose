@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,6 +39,7 @@ private const val POSITION_NEXT_PAGE_LOADING = 3
 @Composable
 fun NewArticlesScreen() {
     val viewModel = viewModel<NewArticleViewModel>()
+    remember { viewModel.fetchNextArticles() }
     NewArticleList(
         items = viewModel.items,
         onStartLoadNextPage = { viewModel.fetchNextArticles() }
@@ -70,7 +72,8 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
     val imageUrl = item.article.profileImageUrl
     var profileImage by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
     rememberCoroutineScope().launch {
-        profileImage = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
+        profileImage = Picasso.get()
+            .getBitmapImage(imageUrl).asImageAsset()
     }
 
     Card(

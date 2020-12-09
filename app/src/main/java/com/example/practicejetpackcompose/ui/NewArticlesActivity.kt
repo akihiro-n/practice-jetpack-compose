@@ -11,14 +11,8 @@ import kotlinx.coroutines.FlowPreview
 class NewArticlesActivity : AppCompatActivity() {
 
     @FlowPreview
-    private val viewModel by viewModels<NewArticleViewModel>()
-
-    @FlowPreview
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            NewArticlesScreen()
-        }
-        viewModel.fetchNextArticles()
+        setContent { NewArticlesScreen() }
     }
 }
