@@ -18,7 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
+import androidx.ui.tooling.preview.Preview
 import com.example.practicejetpackcompose.R
+import com.example.practicejetpackcompose.model.ArticleDpo
+import com.example.practicejetpackcompose.model.api.ArticleDto
+import com.example.practicejetpackcompose.model.api.ArticleTagDto
+import com.example.practicejetpackcompose.model.api.UserDto
 import com.example.practicejetpackcompose.ui.common.ErrorMessageScreen
 import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
 import com.example.practicejetpackcompose.ui.common.ProgressScreen
@@ -173,12 +178,33 @@ fun ColumnSpaceDivider() {
     Spacer(modifier = Modifier.height(8.dp))
 }
 
-//@Preview
-//@Composable
-//fun NewArticlesScreenPreview() {
-//     Preview表示用データ
-//    val articles = (0..30).map {
-//        NewArticleListItem.Article(ArticleDpo(title = "Preview Test $it"))
-//    }
-//    NewArticleList(items = articles)
-//}
+@Preview
+@Composable
+fun PreviewNewArticlesScreen() {
+    // Preview表示用データ
+    val articles = (0..30).map {
+        emptyList<NewArticleListItem>().plus(
+            NewArticleListItem.Article(
+                ArticleDpo(
+                    ArticleDto(
+                        user = UserDto(
+                            name = "user name",
+                            description = null,
+                            profileImageUrl = null
+                        ),
+                        title = "article title",
+                        tags = listOf(ArticleTagDto(name = "Kotlin")),
+                        renderedBody = "Preview Content",
+                        updatedAt = "0000 0000",
+                        likesCount = "${it * 2}",
+                        pageViewsCount = "$it"
+                    )
+                )
+            )
+        ).plus(NewArticleListItem.Divider)
+    }.flatten()
+    NewArticleList(
+        items = articles,
+        onStartLoadNextPage = {}
+    )
+}
