@@ -8,7 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 
 @AndroidEntryPoint
-class NewArticlesActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     @FlowPreview
     override fun onCreate(savedInstanceState: Bundle?) {
