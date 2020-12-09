@@ -8,17 +8,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 
 @AndroidEntryPoint
-class NewArticlesActivity : AppCompatActivity() {
-
-    @FlowPreview
-    private val viewModel by viewModels<NewArticleViewModel>()
+class MainActivity : AppCompatActivity() {
 
     @FlowPreview
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            NewArticlesScreen()
-        }
-        viewModel.fetchNextArticles()
+        setContent { NewArticlesScreen() }
     }
 }

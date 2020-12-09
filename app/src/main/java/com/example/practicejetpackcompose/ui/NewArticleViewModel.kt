@@ -28,6 +28,7 @@ class NewArticleViewModel @ViewModelInject constructor(
     }
 
     private val isLoading = ConflatedBroadcastChannel(false)
+    private val tags = ConflatedBroadcastChannel<List<TagDto>>(emptyList())
     private val newArticles = ConflatedBroadcastChannel<List<ArticleDpo>>(emptyList())
     private val requestError = ConflatedBroadcastChannel<Throwable?>(null)
 
@@ -40,11 +41,13 @@ class NewArticleViewModel @ViewModelInject constructor(
 
         combine(
             isLoading.asFlow(),
+            tags.asFlow(),
             newArticles.asFlow(),
             requestError.asFlow()
-        ) { loading, articles, error ->
+        ) { loading, tags, articles, error ->
 
             val progressItem = NewArticleListItem.Progress.takeIf { loading }
+            val tagsItem = NewArticleListItem.Tags(tags = tags)
             val articleItems = articles
                 .mapIndexed { index, articleDpo ->
                     listOfNotNull(
@@ -55,35 +58,44 @@ class NewArticleViewModel @ViewModelInject constructor(
                 .flatten()
             val errorItem = error?.let { NewArticleListItem.Error(it) }
 
-            return@combine articleItems
+            return@combine emptyList<NewArticleListItem>().asSequence()
+                .plus(tagsItem)
+                .plus(NewArticleListItem.Divider)
+                .plus(articleItems)
                 .plus(progressItem)
                 .plus(errorItem)
                 .filterNotNull()
+                .toList()
         }
             .onEach { items = it }
             .launchIn(viewModelScope)
     }
 
-    // TODO: タグ一覧と記事一覧を取得する
     fun fetchFeed() {
-        merge(fetchArticles(), fetchTags()).fetch()
+
+        combine(
+            articleRepository.getArticles(nextPage).toDpo().onEach { new ->
+                nextPage++
+                newArticles.send(newArticles.value + new)
+            },
+            tagRepository.getTags(FIRST_PAGE).onEach {
+                tags.send(it)
+            },
+            // Fixme: 完了を通知したいだけなので[Unit]を返すようにしているが他に良い方法はないか...
+            // RxJavaのCompletableのような機能があればそれを使いたい...
+            transform = { _, _ -> Unit }
+        ).fetch()
     }
 
     fun fetchNextArticles() {
         if (isLoading.value) return
-        fetchArticles().fetch()
-    }
-
-    private fun fetchTags(): Flow<List<TagDto>> =
-        tagRepository.getTags(FIRST_PAGE)
-
-    private fun fetchArticles(): Flow<List<ArticleDpo>> =
-        articleRepository.getArticles(nextPage)
-            .toDpo()
+        articleRepository.getArticles(nextPage).toDpo()
             .onEach { new ->
                 nextPage++
                 newArticles.send(newArticles.value + new)
             }
+            .fetch()
+    }
 
     private fun <T> Flow<T>.fetch() {
         onStart { isLoading.send(true); requestError.send(null) }

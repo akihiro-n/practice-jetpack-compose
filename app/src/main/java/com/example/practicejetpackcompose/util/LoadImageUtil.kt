@@ -1,6 +1,7 @@
 package com.example.practicejetpackcompose.util
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
@@ -12,7 +13,10 @@ suspend fun Picasso.getBitmapImage(url: String?): Bitmap =
     suspendCancellableCoroutine { continuation ->
         val callback = bitmapCallback(onSuccess = continuation::resume)
         continuation.invokeOnCancellation { cancelRequest(callback) }
-        load(url).into(callback)
+        load(url)
+            .resize(100, 100)
+            .onlyScaleDown()
+            .into(callback)
     }
 
 fun bitmapCallback(onSuccess: (Bitmap) -> Unit) =
