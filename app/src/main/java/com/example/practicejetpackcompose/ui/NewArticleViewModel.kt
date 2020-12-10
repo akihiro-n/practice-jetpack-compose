@@ -1,8 +1,6 @@
 package com.example.practicejetpackcompose.ui
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +11,6 @@ import com.example.practicejetpackcompose.model.ArticleDpo
 import com.example.practicejetpackcompose.model.api.TagDto
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
 
 @FlowPreview
@@ -27,24 +24,21 @@ class NewArticleViewModel @ViewModelInject constructor(
         private const val FIRST_PAGE = 1L
     }
 
-    private val isLoading = ConflatedBroadcastChannel(false)
-    private val tags = ConflatedBroadcastChannel<List<TagDto>>(emptyList())
-    private val newArticles = ConflatedBroadcastChannel<List<ArticleDpo>>(emptyList())
-    private val requestError = ConflatedBroadcastChannel<Throwable?>(null)
+    private val isLoading = MutableStateFlow(false)
+    private val tags = MutableStateFlow<List<TagDto>>(emptyList())
+    private val newArticles = MutableStateFlow<List<ArticleDpo>>(emptyList())
+    private val requestError = MutableStateFlow<Throwable?>(null)
 
+    /** 記事一覧の次ページのIndex */
     private var nextPage = FIRST_PAGE
 
-    var items: List<NewArticleListItem> by mutableStateOf(listOf())
+    var items: List<NewArticleListItem> by mutableStateOf(emptyList())
         private set
 
     init {
 
-        combine(
-            isLoading.asFlow(),
-            tags.asFlow(),
-            newArticles.asFlow(),
-            requestError.asFlow()
-        ) { loading, tags, articles, error ->
+        /** Feed画面に表示するデータをマージする */
+        combine(isLoading, tags, newArticles, requestError) { loading, tags, articles, error ->
 
             val progressItem = NewArticleListItem.Progress.takeIf { loading }
             val tagsItem = NewArticleListItem.Tags(tags = tags)
@@ -71,15 +65,15 @@ class NewArticleViewModel @ViewModelInject constructor(
             .launchIn(viewModelScope)
     }
 
+    /** タグ一覧と最新記事一覧をリクエスト */
     fun fetchFeed() {
-
         combine(
             articleRepository.getArticles(nextPage).toDpo().onEach { new ->
                 nextPage++
-                newArticles.send(newArticles.value + new)
+                newArticles.value = newArticles.value + new
             },
             tagRepository.getTags(FIRST_PAGE).onEach {
-                tags.send(it)
+                tags.value = it
             },
             // Fixme: 完了を通知したいだけなので[Unit]を返すようにしているが他に良い方法はないか...
             // RxJavaのCompletableのような機能があればそれを使いたい...
@@ -87,20 +81,25 @@ class NewArticleViewModel @ViewModelInject constructor(
         ).fetch()
     }
 
+    /** 記事一覧のページング */
     fun fetchNextArticles() {
         if (isLoading.value) return
         articleRepository.getArticles(nextPage).toDpo()
             .onEach { new ->
                 nextPage++
-                newArticles.send(newArticles.value + new)
+                newArticles.value = newArticles.value + new
             }
             .fetch()
     }
 
+    /** HTTPリクエスト次のローディングとエラーの状態を管理 */
     private fun <T> Flow<T>.fetch() {
-        onStart { isLoading.send(true); requestError.send(null) }
-            .catch { requestError.send(it) }
-            .onCompletion { isLoading.send(false) }
+        onStart {
+            isLoading.value = true
+            requestError.value = null
+        }
+            .catch { requestError.value = it }
+            .onCompletion { isLoading.value = false }
             .launchIn(viewModelScope)
     }
 }
