@@ -59,7 +59,10 @@ fun NewArticlesScreen() {
                 else -> Unit
             }
         },
-        onStartLoadNextPage = { viewModel.fetchNextArticles() }
+        onStartLoadNextPage = {
+            /** 次ページの記事一覧をリクエストする */
+            viewModel.fetchNextArticles()
+        }
     )
 }
 
