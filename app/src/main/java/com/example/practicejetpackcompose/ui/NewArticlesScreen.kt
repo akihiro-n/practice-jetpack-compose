@@ -2,15 +2,14 @@ package com.example.practicejetpackcompose.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.foundation.lazy.LazyRowFor
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,17 +42,34 @@ private const val POSITION_NEXT_PAGE_LOADING = 3
 @FlowPreview
 @Composable
 fun NewArticlesScreen() {
+
     val viewModel = viewModel<NewArticleViewModel>()
     remember { viewModel.fetchFeed() }
+
     NewArticleList(
         items = viewModel.items,
-        onStartLoadNextPage = { viewModel.fetchNextArticles() }
+        onClickItem = {
+            when (it) {
+                is NewArticleListItem.Article -> {
+                    // TODO: 記事詳細画面へ遷移する
+                }
+                is NewArticleListItem.Tags -> {
+                    // TODO: タグの検索結果画面へ遷移する
+                }
+                else -> Unit
+            }
+        },
+        onStartLoadNextPage = {
+            /** 次ページの記事一覧をリクエストする */
+            viewModel.fetchNextArticles()
+        }
     )
 }
 
 @Composable
 fun NewArticleList(
     items: List<NewArticleListItem>,
+    onClickItem: (NewArticleListItem) -> Unit,
     onStartLoadNextPage: () -> Unit
 ) {
 
@@ -72,7 +88,7 @@ fun NewArticleList(
                     onActive { onStartLoadNextPage.invoke() }
                 }
 
-                NewArticleColumn(item)
+                NewArticleColumn(item, onClickItem)
             }
             is NewArticleListItem.Divider -> ColumnSpaceDivider()
         }
@@ -91,17 +107,19 @@ fun PopularTagsColumn(item: NewArticleListItem.Tags) {
             imageAsset = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
         }
 
-        val imageModifier = Modifier.size(12.dp).clip(RoundedCornerShape(4.dp))
-        val asset = imageAsset
+        val rowModifier = Modifier.background(
+            color = colorResource(R.color.content_dark),
+            shape = RectangleShape
+        ).padding(8.dp)
 
         Row(
-            modifier = Modifier.background(
-                color = colorResource(R.color.content_dark),
-                shape = RectangleShape
-            ).padding(8.dp),
+            modifier = rowModifier,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            val imageModifier = Modifier.size(12.dp).clip(RoundedCornerShape(4.dp))
+            val asset = imageAsset
 
             if (asset != null) {
                 Image(
@@ -129,7 +147,10 @@ fun PopularTagsColumn(item: NewArticleListItem.Tags) {
 }
 
 @Composable
-fun NewArticleColumn(item: NewArticleListItem.Article) {
+fun NewArticleColumn(
+    item: NewArticleListItem.Article,
+    onClick: (NewArticleListItem.Article) -> Unit = {}
+) {
 
     val imageUrl = item.article.profileImageUrl
     var profileImage by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
@@ -137,11 +158,14 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
         profileImage = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
     }
 
+    val contentModifier = Modifier
+        .clickable(onClick = { onClick.invoke(item) })
+        .padding(horizontal = 16.dp)
+        .heightIn(200.dp)
+        .fillMaxWidth()
+
     Card(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .heightIn(200.dp)
-            .fillMaxWidth(),
+        modifier = contentModifier,
         backgroundColor = colorResource(R.color.content_dark)
     ) {
 
@@ -225,7 +249,7 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
             ) {
                 Text(
                     text = stringResource(R.string.likes_icon),
-                    color = Color.Red,
+                    color = Color.LightGray,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -235,7 +259,7 @@ fun NewArticleColumn(item: NewArticleListItem.Article) {
 
                 Text(
                     text = stringResource(R.string.views_icon),
-                    color = Color.Yellow,
+                    color = Color.LightGray,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -292,6 +316,7 @@ fun PreviewNewArticlesScreen() {
 
     NewArticleList(
         items = tags + articles,
+        onClickItem = {},
         onStartLoadNextPage = {}
     )
 }

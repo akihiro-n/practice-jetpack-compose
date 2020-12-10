@@ -18,6 +18,7 @@ def fragment_ktx_version = "1.2.5"
 def lifecycle_ktx_version = "2.2.0"
 def livedata_ktx_version = "2.2.0"
 def picasso_version = "2.71828"
+def navigation_compose_version = "1.0.0-alpha01"
 
 android {
     compileSdkVersion 30
@@ -106,4 +107,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$livedata_ktx_version"
     // picasso
     implementation "com.squareup.picasso:picasso:$picasso_version"
+    // navigation compose
+    implementation "androidx.navigation:navigation-compose:$navigation_compose_version"
 }

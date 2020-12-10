@@ -13,10 +13,7 @@ suspend fun Picasso.getBitmapImage(url: String?): Bitmap =
     suspendCancellableCoroutine { continuation ->
         val callback = bitmapCallback(onSuccess = continuation::resume)
         continuation.invokeOnCancellation { cancelRequest(callback) }
-        load(url)
-            .resize(100, 100)
-            .onlyScaleDown()
-            .into(callback)
+        load(url).into(callback)
     }
 
 fun bitmapCallback(onSuccess: (Bitmap) -> Unit) =
