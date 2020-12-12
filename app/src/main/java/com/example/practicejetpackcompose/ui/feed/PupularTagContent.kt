@@ -18,8 +18,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.ui.tooling.preview.Preview
 import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
+import com.example.practicejetpackcompose.ui.feed.preview.FeedPreviewData
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
@@ -73,4 +75,14 @@ fun PopularTagsContent(item: FeedItem.Tags) {
 
         Spacer(modifier = Modifier.width(8.dp))
     }
+}
+
+@Preview
+@Composable
+fun PreviewPopularTagContent() {
+    PopularTagsContent(
+        item = FeedPreviewData.tags
+            .filterIsInstance<FeedItem.Tags>()
+            .first()
+    )
 }
