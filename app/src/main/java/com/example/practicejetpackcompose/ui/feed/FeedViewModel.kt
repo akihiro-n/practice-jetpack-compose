@@ -1,4 +1,4 @@
-package com.example.practicejetpackcompose.ui
+package com.example.practicejetpackcompose.ui.feed
 
 import androidx.compose.runtime.*
 import androidx.hilt.lifecycle.ViewModelInject
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.*
 
 @FlowPreview
 @OptIn(ExperimentalCoroutinesApi::class)
-class NewArticleViewModel @ViewModelInject constructor(
+class FeedViewModel @ViewModelInject constructor(
     private val articleRepository: ArticleRepository,
     private val tagRepository: TagRepository
 ) : ViewModel() {
@@ -32,7 +32,7 @@ class NewArticleViewModel @ViewModelInject constructor(
     /** 記事一覧の次ページのIndex */
     private var nextPage = FIRST_PAGE
 
-    var items: List<NewArticleListItem> by mutableStateOf(emptyList())
+    var items: List<FeedItem> by mutableStateOf(emptyList())
         private set
 
     init {
@@ -40,21 +40,21 @@ class NewArticleViewModel @ViewModelInject constructor(
         /** Feed画面に表示するデータをマージする */
         combine(isLoading, tags, newArticles, requestError) { loading, tags, articles, error ->
 
-            val progressItem = NewArticleListItem.Progress.takeIf { loading }
-            val tagsItem = NewArticleListItem.Tags(tags = tags)
+            val progressItem = FeedItem.Progress.takeIf { loading }
+            val tagsItem = FeedItem.Tags(tags = tags)
             val articleItems = articles
                 .mapIndexed { index, articleDpo ->
                     listOfNotNull(
-                        NewArticleListItem.Article(articleDpo),
-                        NewArticleListItem.Divider.takeIf { index != articles.lastIndex }
+                        FeedItem.Article(articleDpo),
+                        FeedItem.Divider.takeIf { index != articles.lastIndex }
                     )
                 }
                 .flatten()
-            val errorItem = error?.let { NewArticleListItem.Error(it) }
+            val errorItem = error?.let { FeedItem.Error(it) }
 
-            return@combine emptyList<NewArticleListItem>().asSequence()
+            return@combine emptyList<FeedItem>().asSequence()
                 .plus(tagsItem)
-                .plus(NewArticleListItem.Divider)
+                .plus(FeedItem.Divider)
                 .plus(articleItems)
                 .plus(progressItem)
                 .plus(errorItem)
