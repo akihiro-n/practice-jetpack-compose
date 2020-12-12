@@ -18,23 +18,28 @@ fun FlexibleGrid(
 
     Layout(children, modifier) { measuarbles, constraints ->
 
-        val maxWidth = constraints.maxWidth
+        val placeables = measuarbles.map { it.measure(constraints) }
 
-        layout(constraints.maxWidth, constraints.maxHeight) {
+        val maxWidth = constraints.maxWidth
+        val sumWidth = placeables.sumBy { it.width }
+        val columnsSize = sumWidth / maxWidth + if (sumWidth % maxWidth == 0) 0 else 1
+
+        layout(
+            width = maxWidth,
+            height = (placeables.firstOrNull()?.height ?: 0) * columnsSize
+        ) {
 
             var width = 0
             var y = 0
 
-            measuarbles
-                .map { it.measure(constraints) }
-                .forEach { placeable ->
-                    width += placeable.width
-                    if (width > maxWidth) {
-                        width = placeable.width
-                        y += placeable.height
-                    }
-                    placeable.place(width - placeable.width, y)
+            placeables.forEach { placeable ->
+                width += placeable.width
+                if (width > maxWidth) {
+                    width = placeable.width
+                    y += placeable.height
                 }
+                placeable.place(width - placeable.width, y)
+            }
         }
     }
 }
