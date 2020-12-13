@@ -2,9 +2,10 @@ package com.example.practicejetpackcompose.ui.common
 
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import kotlinx.coroutines.launch
 
 /**
  * Viewを横一列に配置
@@ -19,14 +20,28 @@ fun FlexibleGrid(
     Layout(children, modifier) { measuarbles, constraints ->
 
         val placeables = measuarbles.map { it.measure(constraints) }
-
         val maxWidth = constraints.maxWidth
-        val sumWidth = placeables.sumBy { it.width }
-        val columnsSize = sumWidth / maxWidth + if (sumWidth % maxWidth == 0) 0 else 1
+        val placeablesLastIndex = placeables.lastIndex
+        // 一番高いViewに合わせる TODO: 高さを行ごとに柔軟に変えられるようにしたい
+        val placeableHeight = placeables.maxOfOrNull { it.height } ?: 0
+        val widths = placeables.map { it.width }
+
+        val columnWidths = mutableListOf<Int>()
+        var columnWidth = 0
+
+        widths.forEachIndexed { index, w ->
+            columnWidth += w
+            if (columnWidth > maxWidth) {
+                columnWidths.add(columnWidth - w)
+                columnWidth = 0
+                return@forEachIndexed
+            }
+            if (index == placeablesLastIndex) columnWidths.add(columnWidth)
+        }
 
         layout(
-            width = maxWidth,
-            height = (placeables.firstOrNull()?.height ?: 0) * columnsSize
+            width = columnWidths.maxOrNull() ?: 0,
+            height = placeableHeight * columnWidths.size
         ) {
 
             var width = 0

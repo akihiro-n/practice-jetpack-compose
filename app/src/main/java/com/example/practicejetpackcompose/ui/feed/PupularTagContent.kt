@@ -29,13 +29,14 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PopularTagsContent(items: FeedItem.Tags) {
-    FlexibleGrid {
-        items.tags.forEach { TagContent(tag = it) }
-    }
+    FlexibleGrid { items.tags.forEach { TagContent(it) } }
 }
 
 @Composable
 fun TagContent(tag: TagDto) {
+    val rowModifier = Modifier
+        .background(color = colorResource(R.color.content_dark), shape = RectangleShape)
+        .padding(8.dp)
 
     val imageUrl = tag.iconUrl
     var imageAsset by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
@@ -44,20 +45,10 @@ fun TagContent(tag: TagDto) {
         imageAsset = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
     }
 
-    val rowModifier = Modifier.background(
-        color = colorResource(R.color.content_dark),
-        shape = RectangleShape
-    ).padding(8.dp)
-
-    Row(
-        modifier = rowModifier,
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
+    Row(rowModifier, Arrangement.Center, Alignment.CenterVertically) {
         val imageModifier = Modifier.size(12.dp).clip(RoundedCornerShape(4.dp))
-        val asset = imageAsset
 
+        val asset = imageAsset
         if (asset != null) {
             Image(
                 modifier = imageModifier,
@@ -67,15 +58,12 @@ fun TagContent(tag: TagDto) {
         } else {
             LoadingImageScreen(imageModifier)
         }
-
         Spacer(Modifier.width(4.dp))
-
         Text(
             text = tag.id,
             color = Color.White,
             fontSize = 12.sp
         )
-
         Spacer(Modifier.width(8.dp))
     }
 
