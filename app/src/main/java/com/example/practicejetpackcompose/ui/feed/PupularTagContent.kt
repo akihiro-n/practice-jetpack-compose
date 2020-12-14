@@ -1,24 +1,18 @@
 package com.example.practicejetpackcompose.ui.feed
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageAsset
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.asImageAsset
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
-import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.model.api.TagDto
 import com.example.practicejetpackcompose.ui.common.FlexibleGrid
 import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
@@ -29,14 +23,26 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PopularTagsContent(items: FeedItem.Tags) {
-    FlexibleGrid { items.tags.forEach { TagContent(it) } }
+
+    val modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
+
+    Card(
+        modifier = modifier,
+        backgroundColor = Color.Transparent,
+        border = BorderStroke(1.dp, Color.Gray),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Column(modifier = modifier) {
+            FlexibleGrid { items.tags.forEach { TagContent(it) } }
+        }
+    }
 }
 
 @Composable
-fun TagContent(tag: TagDto) {
-    val rowModifier = Modifier
-        .background(color = colorResource(R.color.content_dark), shape = RectangleShape)
-        .padding(8.dp)
+fun TagContent(
+    tag: TagDto,
+    onClick: (TagDto) -> Unit = {}
+) {
 
     val imageUrl = tag.iconUrl
     var imageAsset by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
@@ -45,29 +51,41 @@ fun TagContent(tag: TagDto) {
         imageAsset = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
     }
 
-    Row(rowModifier, Arrangement.Center, Alignment.CenterVertically) {
-        val imageModifier = Modifier.size(12.dp).clip(RoundedCornerShape(4.dp))
+    Row(
+        modifier = Modifier.wrapContentHeight().wrapContentWidth().padding(8.dp)
+    ) {
 
-        val asset = imageAsset
-        if (asset != null) {
-            Image(
-                modifier = imageModifier,
-                contentScale = ContentScale.FillWidth,
-                asset = asset,
+        OutlinedButton(
+            border = BorderStroke(1.dp, Color.Gray),
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonConstants.defaultTextButtonColors(
+                contentColor = Color.Transparent,
+                backgroundColor = Color.Transparent
+            ),
+            modifier = Modifier.wrapContentHeight().wrapContentWidth(),
+            onClick = { onClick.invoke(tag) }
+        ) {
+
+            val imageModifier = Modifier.size(12.dp).clip(RoundedCornerShape(4.dp))
+
+            val asset = imageAsset
+            if (asset != null) {
+                Image(
+                    modifier = imageModifier,
+                    contentScale = ContentScale.FillWidth,
+                    asset = asset,
+                )
+            } else {
+                LoadingImageScreen(imageModifier)
+            }
+            Text(
+                text = tag.id,
+                color = Color.White,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp)
             )
-        } else {
-            LoadingImageScreen(imageModifier)
         }
-        Spacer(Modifier.width(4.dp))
-        Text(
-            text = tag.id,
-            color = Color.White,
-            fontSize = 12.sp
-        )
-        Spacer(Modifier.width(8.dp))
     }
-
-    Spacer(Modifier.width(8.dp))
 }
 
 @Preview

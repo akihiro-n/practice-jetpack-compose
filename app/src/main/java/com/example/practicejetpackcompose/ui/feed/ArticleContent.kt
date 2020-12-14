@@ -41,7 +41,7 @@ fun ArticleContent(
 
     val contentModifier = Modifier
         .clickable(onClick = { onClick.invoke(item) })
-        .padding(horizontal = 16.dp)
+        .padding(horizontal = 8.dp)
         .heightIn(200.dp)
         .fillMaxWidth()
 
@@ -86,24 +86,8 @@ fun ArticleContent(
                     }
                 }
             }
-
-            val imageModifier = Modifier.fillMaxWidth().height(128.dp)
-            val asset = profileImage
-
-            if (asset != null) {
-                Image(
-                    modifier = imageModifier,
-                    contentScale = ContentScale.FillWidth,
-                    asset = asset,
-                )
-            } else {
-                LoadingImageScreen(modifier = imageModifier)
-            }
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
@@ -115,7 +99,7 @@ fun ArticleContent(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = item.article.plainTextBody,
-                    maxLines = 2,
+                    maxLines = 4,
                     color = Color.LightGray,
                     fontSize = 16.sp
                 )
