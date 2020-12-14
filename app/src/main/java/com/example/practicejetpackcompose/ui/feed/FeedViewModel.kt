@@ -41,7 +41,7 @@ class FeedViewModel @ViewModelInject constructor(
         combine(isLoading, tags, newArticles, requestError) { loading, tags, articles, error ->
 
             val progressItem = FeedItem.Progress.takeIf { loading }
-            val tagsItem = FeedItem.Tags(tags = tags)
+            val tagsItem = FeedItem.Tags(tags).takeIf { tags.isNotEmpty() }
             val articleItems = articles
                 .mapIndexed { index, articleDpo ->
                     listOfNotNull(

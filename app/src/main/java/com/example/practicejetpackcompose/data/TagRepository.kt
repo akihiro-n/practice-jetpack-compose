@@ -22,7 +22,7 @@ interface TagRepository {
     }
 
     companion object {
-        private const val PER_PAGE = 10L
+        private const val PER_PAGE = 15L
     }
 
     fun getTags(

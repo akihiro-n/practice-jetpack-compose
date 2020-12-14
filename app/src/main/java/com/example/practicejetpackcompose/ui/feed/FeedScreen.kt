@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
@@ -22,7 +23,7 @@ fun FeedScreen() {
     val viewModel = viewModel<FeedViewModel>()
     remember { viewModel.fetchFeed() }
 
-    Scaffold {
+    Scaffold(backgroundColor = Color.Black) {
         FeedItemListContent(
             items = viewModel.items,
             onClickItem = {
