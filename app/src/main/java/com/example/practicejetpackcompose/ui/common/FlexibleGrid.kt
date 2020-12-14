@@ -29,11 +29,17 @@ fun FlexibleGrid(
         val columnWidths = mutableListOf<Int>()
         var columnWidth = 0
 
-        widths.forEachIndexed { index, w ->
-            columnWidth += w
+        widths.forEachIndexed { index, placeableWidth ->
+            columnWidth += placeableWidth
             if (columnWidth > maxWidth) {
-                columnWidths.add(columnWidth - w)
-                columnWidth = 0
+                /**
+                 * カラムの横幅を確定する
+                 */
+                columnWidths.add(columnWidth - placeableWidth)
+                /**
+                 * 次の行のカラムに横幅を追加
+                 */
+                columnWidth = placeableWidth
                 return@forEachIndexed
             }
             if (index == placeablesLastIndex) columnWidths.add(columnWidth)
