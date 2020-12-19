@@ -1,13 +1,20 @@
 package com.example.practicejetpackcompose.util
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
+import androidx.compose.ui.graphics.ImageAsset
+import androidx.compose.ui.graphics.asImageAsset
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+
+suspend fun Bitmap.asImageAssetAsync(): ImageAsset =
+    withContext(Dispatchers.Default) {
+        asImageAsset()
+    }
 
 suspend fun Picasso.getBitmapImage(url: String?): Bitmap =
     suspendCancellableCoroutine { continuation ->

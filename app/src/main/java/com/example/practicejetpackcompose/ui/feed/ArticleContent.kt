@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageAsset
-import androidx.compose.ui.graphics.asImageAsset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -23,6 +22,7 @@ import androidx.ui.tooling.preview.Preview
 import com.example.practicejetpackcompose.R
 import com.example.practicejetpackcompose.ui.common.LoadingImageScreen
 import com.example.practicejetpackcompose.ui.feed.preview.FeedPreviewData
+import com.example.practicejetpackcompose.util.asImageAssetAsync
 import com.example.practicejetpackcompose.util.getBitmapImage
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
@@ -36,7 +36,7 @@ fun ArticleContent(
     val imageUrl = item.article.profileImageUrl
     var profileImage by remember(imageUrl) { mutableStateOf<ImageAsset?>(null) }
     rememberCoroutineScope().launch {
-        profileImage = Picasso.get().getBitmapImage(imageUrl).asImageAsset()
+        profileImage = Picasso.get().getBitmapImage(imageUrl).asImageAssetAsync()
     }
 
     val contentModifier = Modifier
